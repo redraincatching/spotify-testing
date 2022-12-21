@@ -16,7 +16,7 @@ const APIController = (function() {
         });
         
         const data = await result.json();
-        return data.access_token();
+        return data.access_token;
     }
 
     const _getGenres = async (token) => {
@@ -76,7 +76,7 @@ const APIController = (function() {
         getGenres(token) {
             return _getGenres(token);
         },
-        getPlaylistByGenres(token, genreId) {
+        getPlaylistByGenre(token, genreId) {
             return _getPlaylistByGenre(token, genreId);
         },
         getTracks(token, tracksEndPoint) {
@@ -156,10 +156,10 @@ const UIController = (function() {
                 <img src="${img}" alt="">        
             </div>
             <div class="row col-sm-12 px-0">
-                <label for="Genre" class="form-label col-sm-12">${title}:</label>
+                <label for="Genre" class="form-label col-sm-12">track: ${title}</label>
             </div>
             <div class="row col-sm-12 px-0">
-                <label for="artist" class="form-label col-sm-12">By ${artist}:</label>
+                <label for="artist" class="form-label col-sm-12">artist: ${artist}</label>
             </div> 
             `;
 
@@ -232,6 +232,59 @@ const APPController = (function(UICtrl, APICtrl) {
         // get the genre select field
         const genreSelect = UICtrl.inputField().genre;
         // get the genre id associated with the selected genre
+        const genreId = genreSelect.options[genreSelect.selectedIndex].value;
+        // get the playlist based on the genre
+        const playlist = await APICtrl.getPlaylistByGenre(token, genreId);
+        // create a list item for each returned
+        playlist.forEach(p => UICtrl.createPlaylist(p.name, p.tracks.href));
     });
 
+    // create the submit button event listener
+    DOMInputs.submit.addEventListener('click', async (e) => {
+        // prevent page reset
+        e.preventDefault();
+        // clear tracks
+        UICtrl.resetTracks();
+        // get stored token
+        const token = UICtrl.getStoredToken().token;
+        // get the playlist field
+        const playlistSelect = UICtrl.inputField().playlist;
+        // get track endpoint based on the selected playlist
+        const tracksEndPoint = playlistSelect.options[playlistSelect.selectedIndex].value;
+        // get the list of tracks
+        const tracks = await APICtrl.getTracks(token, tracksEndPoint);
+        // create a track list item
+        tracks.forEach(el => UICtrl.createTrack(el.track.href, el.track.name));
+    });
+
+    // create song selection click event listener
+    DOMInputs.tracks.addEventListener('click', async (e) => {
+        // prevent page reset
+        e.preventDefault();
+        UICtrl.resetTrackDetail();
+        // get stored token
+        const token = UICtrl.getStoredToken().token;
+        // get the track endpoint
+        const trackEndpoint = e.target.id;
+        // get the track object
+        const track = await APICtrl.getTrack(token, trackEndpoint);
+        // load the track details
+        UICtrl.createTrackDetail(track.album.images[1].url, track.name, track.artists[0].name);
+        /*
+            we're employing something called event delegation here
+            so that we don't have to create a listener for each track's anchor tag, we delegate the parent element (the tracks div) to handle the event
+            and we use the event.target.id to find out what exactly was clicked on
+        */
+    });
+
+    return {
+        init() {
+            console.log('App is starting');
+            loadGenres();
+        }
+    }
+
 })(UIController, APIController);
+
+// method to initialise on page load
+APPController.init();
