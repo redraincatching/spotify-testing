@@ -165,6 +165,34 @@ const UIController = (function() {
 
             detailDiv.insertAdjacentHTML('beforeend', html)
         },
+        
+        // these just reset stuff
+
+        resetTrackDetail() {
+            this.inputField().songDetail.innerHTML = '';
+        },
+
+        resetTracks() {
+            this.inputField().tracks.innerHTML = '';
+            this.resetTrackDetail();
+        },
+
+        resetPlaylist() {
+            this.inputField().playlist.innerHTML = '';
+            this.resetTracks();
+        },
+
+        // handy
+
+        storeToken(value) {
+            document.querySelector(DOMElements.hfToken).value = value;
+        },
+
+        getStoredToken() {
+            return {
+                token: document.querySelector(DOMElements.hfToken).value
+            }
+        }
 
     }
 
@@ -174,4 +202,36 @@ const UIController = (function() {
 /*
     so you'll notice that the ui and api controllers have nothing to do with each other
     this is known as separation of concerns
+    so we'll make another module that handles all of that 
 */
+
+const APPController = (function(UICtrl, APICtrl) {
+
+    // get input field object refs
+    const DOMInputs = UICtrl.inputField();
+
+    // get genres on page load
+    const loadGenres = async () => {
+        // get the token
+        const token = await APICtrl.getToken();
+        // store it
+        UICtrl.storeToken(token);
+        // get the genres
+        const genres = await APICtrl.getGenres(token);
+        // populate
+        genres.forEach(element => UICtrl.createGenre(element.name, element.id));
+        
+    }
+
+    // create genre change event listener
+    DOMInputs.genre.addEventListener('change', async () => {
+        // reset the playlist
+        UICtrl.resetPlaylist();
+        // get stored token
+        const token = UICtrl.getStoredToken().token;
+        // get the genre select field
+        const genreSelect = UICtrl.inputField().genre;
+        // get the genre id associated with the selected genre
+    });
+
+})(UIController, APIController);
