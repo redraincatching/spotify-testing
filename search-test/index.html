@@ -6,27 +6,43 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" type="text/css" href="main.css">
-        <script src="app.js" type="text/javascript"></script>
     </head>
 
     <body>
 
-        <div class="searchbar">
+        <div class="searchbar" >
             <input type="text" class="search" placeholder="search">
         </div>
-        <button type="submit" class="btn">Submit</button>
+        <button type="submit" class="btn" id="btn">Submit</button>
         <br>
 
         <centre>
             <div class="artists">
+                <ul id="artist_list"> </ul>
+            </div>
+
+            <br>
+
+            <div class="single_artist">
                 
             </div>
-            
-            <div class="single_artist">
 
+            <br>
+
+            <div class="tracks">
+                <ul id="track_list"> </ul>
+            </div>
+
+            <br>
+
+            <div class="albums">
+                <ul id="album_list"> </ul>
             </div>
         </centre>
 
+        <input type="hidden" id='hidden_token'>
+
+        <script src="app.js" type="text/javascript"></script>
     </body>
 
 </html>
