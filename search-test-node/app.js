@@ -19,6 +19,8 @@ const APIController = (function() {
 
     // private methods
 
+    // TOKEN THING GOES HERE
+
     // take string input and search
     const _searchArtists = async (search) => {
 

@@ -32,15 +32,18 @@ const APIController = (function() {
 
     // take string input and search
     const _searchArtists = async (token, search) => {
+        console.log("start of search");
 
         const limit = 10;
 
-        const result = await fetch(`https://api.spotify.com/v1/search?q=${search}&limit=${limit}type=artist`, {
+        const result = await fetch(`https://api.spotify.com/v1/search?q=${search}&limit=${limit}&type=artist`, {
             method: 'GET',
             headers: { 'Authorization': 'Bearer ' + token }
         });
 
         const data = await result.json();
+
+        console.log("end of search");
         return data.artists;
     }
 
@@ -226,12 +229,13 @@ const APPController = function(APICtrl, UICtrl) {
         UICtrl.resetSelectedArtist();
 
         // get stored token
-        const token = UICtrl.getStoredToken();
+        const token = UICtrl.getStoredToken().token;
 
         // get the query
         const query = DOMInputs.searchbar.value;
 
         // actually search for the artists
+        // TODO: handle no search results
         if (query === "") {
             alert("you must enter a string to search for an artist");
         } else {
@@ -239,7 +243,7 @@ const APPController = function(APICtrl, UICtrl) {
             const artists = await APICtrl.searchArtists(token, query);
 
             // and create a list item for each one
-            artists.forEach(el => UICtrl.createArtist(el.href, el.name));
+            artists.items.forEach(el => UICtrl.createArtist(el.href, el.name));
         };
 
     });
