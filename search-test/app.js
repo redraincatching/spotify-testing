@@ -32,7 +32,6 @@ const APIController = (function() {
 
     // take string input and search
     const _searchArtists = async (token, search) => {
-        console.log("start of search");
 
         const limit = 10;
 
@@ -43,16 +42,14 @@ const APIController = (function() {
 
         const data = await result.json();
 
-        console.log("end of search");
         return data.artists;
     }
 
-    // TODO: when this works add a hipster tag search
 
     // then display the information of a single artist when selected
     const _displayArtist = async (token, artistId) => {
 
-        const result = await fetch(`https://api.spotify.com/v1/artists/${artistId}`, {
+        const result = await fetch(artistId, {
             method: 'GET',
             headers: { 'Authorization': 'Bearer ' + token }
         });
@@ -64,7 +61,7 @@ const APIController = (function() {
     // and get that artist's top tracks
     const _displayTopTracks = async (token, artistId) => {
 
-        const result = await fetch(`https://api.spotify.com/v1/artists/${artistId}/top-tracks`, {
+        const result = await fetch(`${artistId}/top-tracks?market=IE`, {
             method: 'GET',
             headers: { 'Authorization': 'Bearer ' + token }
         });
@@ -78,7 +75,7 @@ const APIController = (function() {
 
         const limit = 10;
 
-        const result = await fetch(`https://api.spotify.com/v1/artists/${artistId}/albums?limit=${limit}`, {
+        const result = await fetch(`${artistId}/albums?limit=${limit}&market=IE`, {
             method: 'GET',
             headers: { 'Authorization': 'Bearer ' + token }
         });
@@ -95,7 +92,7 @@ const APIController = (function() {
         searchArtists(token, search) {
             return _searchArtists(token, search);
         },
-        displayArtists(token, artistId) {
+        displayArtist(token, artistId) {
             return _displayArtist(token, artistId);
         },
         displayTopTracks(token, artistId) {
@@ -149,8 +146,13 @@ const UIController = (function() {
         },
 
         // and for albums
-        createAlbum(id, name) {
-            const html = `<li id=${id}>${name}</li>`;
+        createAlbum(id, name, img) {
+            const html =    `<li id=${id}>
+                            
+                            <img src="${img}" height="150" width="150" alt="">    
+                            ${name}     
+                            
+                            </li>`;
             document.querySelector(DOMElements.albumList).insertAdjacentHTML('beforeend', html);
         },
 
@@ -162,7 +164,7 @@ const UIController = (function() {
 
             const html =
             `
-            <img src="${img}" alt="">        
+            <img src="${img}" height="450" width="450" alt="">         
             <br>
             artist: ${name}
             `;
@@ -248,8 +250,29 @@ const APPController = function(APICtrl, UICtrl) {
 
     });
 
-    // now one to display a selected artist
 
+    // now one to display a selected artist
+    DOMInputs.artists.addEventListener('click', async (e) => {
+        // prevent page reset
+        e.preventDefault();
+        // clear selected artist
+        UICtrl.resetSelectedArtist();
+        // get token
+        const token = UICtrl.getStoredToken().token;
+
+        // get a specific artist
+        const artistEndpoint = e.target.id;
+        const specArtist = await APICtrl.displayArtist(token, artistEndpoint);
+
+        // create the details
+        UICtrl.selectArtist(specArtist.name, specArtist.images[0].url);
+        
+        const tracks = await APICtrl.displayTopTracks(token, artistEndpoint);
+        tracks.forEach(el => UICtrl.createTrack(el.id, el.name, el.album.name));
+
+        const albums = await APICtrl.displayTopAlbums(token, artistEndpoint);
+        albums.forEach(el => UICtrl.createAlbum(el.id, el.name, el.images[0].url));
+    });
 
 
     return {
