@@ -55,6 +55,7 @@ const APIController = (function() {
         });
 
         const data = await result.json();
+        console.log(data);
         return data;
     }
 

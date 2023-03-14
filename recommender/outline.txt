@@ -1,0 +1,44 @@
+user-based recommender
+    first:
+        - find users similar to u, call them v_1 through v_k
+        - recommend suitable items
+
+    
+
+item-based recommender
+    if user 1 likes {a} and {b}, and user 2 likes {a} and {c}, recommend {b} and {c} respectively
+
+    we want P(a+b), the likelyhood that a and b will be liked at the same time, to be high, otherwise the recommendation is useless
+
+    so we want to maximise two properties:
+        the support, which is proportional to P(a+b), so if {a,b} occurs twice, support is 2
+        the confidence, which is proportional to P(a|b), so if {a} appears 5 times, confidence is 2/5
+
+    we also need to consider _lift_, which deals with high popularity of certain items
+        -> if P(y) is high, P(y|x) is high by default
+        -> therefore, we take the lift, which is P(y|x)/P(y)
+    however, if P(y) is small, say < 0.001, there can be a lot of noise introduced, so confidence is better than lift here
+
+    so currently we have
+        if user likes x:
+
+            if (P(x) > 0.001) {
+                P(x|y)/P(x) * P(x + y);
+            }
+            else {
+                P(x|y) * P(x + y);
+            }
+
+        then, if P > whatever, recommend y.
+
+    or, practically,
+        if user likes x:
+
+            if ( users who like x/total users > 0.001 ) {
+                (times y is liked when x is there)/P(x) * (users who have liked x and y);
+            }
+            else {
+                (times y is liked when x is there) * (users who have liked x and y);
+            }
+
+        then, if P > whatever, recommend y.
